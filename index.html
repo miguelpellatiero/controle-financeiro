@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Controle Financeiro Pessoal</title>
+    
+    <!-- ============================================
+         FRAMEWORKS EXTERNOS (CDN)
+         ============================================ -->
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ============================================
+         ESTILOS PERSONALIZADOS
+         ============================================ -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- ============================================
+         CABEÇALHO
+         ============================================ -->
+    <header>
+        <div class="container">
+            <h1 class="text-center mb-1">Controle Financeiro</h1>
+            <p class="text-center opacity-75 mb-0">Organize suas finanças de forma simples</p>
+        </div>
+    </header>
+    
+    <!-- ============================================
+         BOTÕES FLUTUANTES
+         ============================================ -->
+    <!-- Botão de alternância de tema -->
+    <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Alternar tema">
+        <i class="fas fa-sun"></i>
+    </button>
+    
+    <!-- Botão flutuante da calculadora -->
+    <div class="calculator-fab" id="calculator-fab">
+        <i class="fas fa-calculator"></i>
+    </div>
+    
+    <!-- ============================================
+         CONTEÚDO PRINCIPAL
+         ============================================ -->
+    <div class="container">
+        <!-- Seletor de Mês -->
+        <div class="month-selector">
+            <h2 class="mb-3">Selecione o Mês:</h2>
+            <div class="month-buttons row g-2" id="month-buttons">
+                <!-- Botões gerados dinamicamente pelo JavaScript -->
+            </div>
+        </div>
+        
+        <!-- ========================================
+             SEÇÃO: DASHBOARD
+             ======================================== -->
+        <section id="dashboard" class="section active">
+            <div class="dashboard">
+                <div class="card-custom income">
+                    <h3>Receitas</h3>
+                    <div class="value">R$ <span id="income-total">0,00</span></div>
+                    <p class="description">Total de entradas</p>
+                </div>
+               
+                <div class="card-custom expenses">
+                    <h3>Despesas</h3>
+                    <div class="value">R$ <span id="expenses-total">0,00</span></div>
+                    <p class="description">Total de saídas</p>
+                </div>
+               
+                <div class="card-custom balance">
+                    <h3>Saldo</h3>
+                    <div class="value">R$ <span id="balance-total">0,00</span></div>
+                    <p class="description">Saldo atual</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- ========================================
+             SEÇÃO: TRANSAÇÕES
+             ======================================== -->
+        <section id="transactions" class="section">
+            <h2 class="mb-3">Transações</h2>
+            <div id="no-transactions" class="empty-state">
+                <i class="fas fa-money-bill-wave"></i>
+                <h3>Nenhuma transação</h3>
+                <p>Adicione transações para começar</p>
+            </div>
+            <div id="transactions-list" class="transactions-list">
+                <!-- Transações carregadas dinamicamente -->
+            </div>
+        </section>
+        
+        <!-- ========================================
+             SEÇÃO: ADICIONAR TRANSAÇÃO
+             ======================================== -->
+        <section id="add-transaction" class="section">
+            <h2 class="mb-3">Nova Transação</h2>
+            <div class="form-container">
+                <form id="transaction-form">
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">Descrição</label>
+                        <input type="text" class="form-control" id="description" placeholder="Ex: Salário, Aluguel" required>
+                    </div>
+                   
+                    <div class="mb-3">
+                        <label for="amount" class="form-label fw-semibold">Valor (R$)</label>
+                        <input type="number" class="form-control" id="amount" step="0.01" placeholder="0,00" required>
+                    </div>
+                   
+                    <div class="mb-3">
+                        <label for="type" class="form-label fw-semibold">Tipo</label>
+                        <select class="form-select" id="type" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="income">Receita</option>
+                            <option value="expense">Despesa</option>
+                        </select>
+                    </div>
+                   
+                    <div class="mb-3">
+                        <label for="category" class="form-label fw-semibold">Categoria</label>
+                        <select class="form-select" id="category" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option value="salary">Salário</option>
+                            <option value="freelance">Freelance</option>
+                            <option value="investment">Investimentos</option>
+                            <option value="bonus">Bonificação</option>
+                            <option value="housing">Moradia</option>
+                            <option value="food">Alimentação</option>
+                            <option value="transport">Transporte</option>
+                            <option value="health">Saúde</option>
+                            <option value="education">Educação</option>
+                            <option value="leisure">Lazer</option>
+                            <option value="bills">Contas</option>
+                            <option value="shopping">Compras</option>
+                            <option value="other">Outros</option>
+                        </select>
+                    </div>
+                   
+                    <div class="mb-3">
+                        <label for="date" class="form-label fw-semibold">Data</label>
+                        <input type="date" class="form-control" id="date" required>
+                    </div>
+                   
+                    <button type="submit" class="btn btn-primary-custom" id="submit-btn">Adicionar Transação</button>
+                    <button type="button" class="btn btn-warning-custom" id="cancel-edit" style="display: none;">Cancelar</button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- ========================================
+             SEÇÃO: RELATÓRIOS
+             ======================================== -->
+        <section id="reports" class="section">
+            <h2 class="mb-3">Relatórios</h2>
+            <div class="form-container">
+                <div class="mb-3">
+                    <label for="report-month" class="form-label fw-semibold">Selecione o mês:</label>
+                    <input type="month" class="form-control" id="report-month">
+                </div>
+                <button class="btn btn-primary-custom" id="generate-report-btn">Gerar Relatório</button>
+               
+                <div id="report-content" class="mt-4">
+                    <!-- Conteúdo do relatório gerado dinamicamente -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- ========================================
+             SEÇÃO: CONFIGURAÇÕES
+             ======================================== -->
+        <section id="settings" class="section">
+            <h2 class="mb-3">Configurações</h2>
+           
+            <div class="form-container">
+                <h3>Informações dos Dados</h3>
+                <p>Total de transações: <span id="total-transactions">0</span></p>
+                <p>Última atualização: <span id="last-update">Nunca</span></p>
+               
+                <h3 class="mt-4">Exportar Dados</h3>
+                <button class="btn btn-primary-custom" id="export-text-btn">Exportar como Texto</button>
+                <button class="btn btn-primary-custom mt-2" id="export-json-btn">Exportar Backup (JSON)</button>
+               
+                <h3 class="mt-4 text-danger">Importar Dados</h3>
+                <button class="btn btn-warning-custom" id="import-btn">Restaurar Backup</button>
+                <input type="file" id="import-input" accept=".json" style="display: none;">
+               
+                <h3 class="mt-4 text-danger">Limpar Dados</h3>
+                <button class="btn btn-danger-custom" id="clear-data-btn">Limpar Todos os Dados</button>
+            </div>
+        </section>
+        
+        <!-- ========================================
+             SEÇÃO: CALCULADORA
+             ======================================== -->
+        <section id="calculator-section" class="section">
+            <h2 class="mb-3">Calculadora</h2>
+            <div class="calculator">
+                <div class="calculator-history" id="calc-history"></div>
+                <div class="calculator-display" id="calc-display">0</div>
+                <div class="calculator-buttons">
+                    <button class="calc-btn clear" data-action="clear">C</button>
+                    <button class="calc-btn operator" data-operator="%">%</button>
+                    <button class="calc-btn operator" data-operator="backspace"><i class="fas fa-backspace"></i></button>
+                    <button class="calc-btn operator" data-operator="/">÷</button>
+                   
+                    <button class="calc-btn" data-number="7">7</button>
+                    <button class="calc-btn" data-number="8">8</button>
+                    <button class="calc-btn" data-number="9">9</button>
+                    <button class="calc-btn operator" data-operator="*">×</button>
+                   
+                    <button class="calc-btn" data-number="4">4</button>
+                    <button class="calc-btn" data-number="5">5</button>
+                    <button class="calc-btn" data-number="6">6</button>
+                    <button class="calc-btn operator" data-operator="-">-</button>
+                   
+                    <button class="calc-btn" data-number="1">1</button>
+                    <button class="calc-btn" data-number="2">2</button>
+                    <button class="calc-btn" data-number="3">3</button>
+                    <button class="calc-btn operator" data-operator="+">+</button>
+                   
+                    <button class="calc-btn" data-number="0">0</button>
+                    <button class="calc-btn" data-number=".">.</button>
+                    <button class="calc-btn equals" data-action="calculate">=</button>
+                    <button class="calc-btn operator" data-action="transfer" title="Usar no valor">→</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- ============================================
+         BARRA DE NAVEGAÇÃO INFERIOR
+         ============================================ -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item active" data-section="dashboard">
+            <i class="fas fa-home nav-icon"></i>
+            <span>Início</span>
+        </a>
+        <a href="#" class="nav-item" data-section="transactions">
+            <i class="fas fa-list nav-icon"></i>
+            <span>Transações</span>
+        </a>
+        <a href="#" class="nav-item" data-section="add-transaction">
+            <i class="fas fa-plus-circle nav-icon"></i>
+            <span>Nova</span>
+        </a>
+        <a href="#" class="nav-item" data-section="reports">
+            <i class="fas fa-chart-pie nav-icon"></i>
+            <span>Relatórios</span>
+        </a>
+        <a href="#" class="nav-item" data-section="settings">
+            <i class="fas fa-cog nav-icon"></i>
+            <span>Config</span>
+        </a>
+    </div>
+    
+    <!-- ============================================
+         FRAMEWORKS E SCRIPTS
+         ============================================ -->
+    
+    <!-- Bootstrap Bundle com Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Script principal da aplicação -->
+    <script src="js/script.js"></script>
+</body>
+</html>
