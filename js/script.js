@@ -267,6 +267,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
+        
+        // Esconde o seletor de mês quando a calculadora é aberta
+        document.querySelector('.month-selector').style.display = 'none';
     });
 });
 
@@ -481,6 +484,46 @@ function showSection(sectionId) {
    
     document.getElementById(sectionId).classList.add('active');
    
+    // Controla a visibilidade dos elementos
+    const monthSelector = document.querySelector('.month-selector');
+    const header = document.querySelector('header');
+    const calculatorFab = document.getElementById('calculator-fab');
+    const appTitle = document.querySelector('.calculator-app-title');
+    const body = document.body;
+    
+    // Define quais seções devem mostrar o seletor de mês
+    const showMonthSelectorIn = ['dashboard', 'reports'];
+    
+    // Controla a visibilidade do seletor de mês
+    monthSelector.style.display = showMonthSelectorIn.includes(sectionId) ? 'block' : 'none';
+    
+    // Configurações específicas para a calculadora
+    if (sectionId === 'calculator-section') {
+        body.classList.add('calculator-open');
+        header.style.display = 'none';
+        calculatorFab.style.display = 'none';
+        
+        // Mostra o título da aplicação na calculadora se ainda não existe
+        if (!appTitle) {
+            const title = document.createElement('div');
+            title.className = 'calculator-app-title';
+            title.innerHTML = '<i class="fas fa-coins"></i> Controle Financeiro';
+            document.getElementById('calculator-section').insertBefore(title, document.getElementById('calculator-section').firstChild);
+        }
+    } else {
+        // Remove a classe de bloqueio de scroll
+        body.classList.remove('calculator-open');
+        
+        // Mostra todos os elementos
+        header.style.display = 'block';
+        calculatorFab.style.display = 'flex';
+        
+        // Remove o título da aplicação da calculadora se existir
+        if (appTitle) {
+            appTitle.remove();
+        }
+    }
+   
     if (sectionId === 'dashboard' || sectionId === 'transactions') {
         updateMonthDisplay();
         if (sectionId === 'transactions') {
@@ -509,6 +552,10 @@ function updateMonthButtons() {
             updateMonthDisplay();
             if (document.getElementById('transactions').classList.contains('active')) {
                 loadTransactions();
+            }
+            // Se estiver na seção de relatórios, atualiza o relatório
+            if (document.getElementById('reports').classList.contains('active')) {
+                generateReport();
             }
         });
         
@@ -664,14 +711,8 @@ function deleteTransaction(id) {
 // RELATÓRIOS
 // ==========================================
 function generateReport() {
-    const reportMonth = document.getElementById('report-month').value;
-    if (!reportMonth) {
-        alert('Por favor, selecione um mês para o relatório.');
-        return;
-    }
-    
-    const [year, month] = reportMonth.split('-');
-    const monthIndex = parseInt(month) - 1;
+    // Usar o mês atual selecionado
+    const monthIndex = currentMonth;
     const transactions = financialData.getTransactions(monthIndex);
     let income = 0;
     let expenses = 0;
@@ -728,9 +769,10 @@ function generateReport() {
     }
     
     const balance = income - expenses;
+    const currentYear = new Date().getFullYear();
     let reportHTML = `
         <div class="card-custom">
-            <h3>Relatório de ${monthNames[monthIndex]} ${year}</h3>
+            <h3>Relatório de ${monthNames[monthIndex]} ${currentYear}</h3>
             <p><strong>Total de Receitas:</strong> R$ ${income.toFixed(2).replace('.', ',')}</p>
             <p><strong>Total de Despesas:</strong> R$ ${expenses.toFixed(2).replace('.', ',')}</p>
             <p><strong>Saldo:</strong> <span style="color: ${balance >= 0 ? 'var(--success)' : 'var(--danger)'}">R$ ${balance.toFixed(2).replace('.', ',')}</span></p>
@@ -811,17 +853,40 @@ function generateReport() {
                 }]
             },
             options: {
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { 
+                        display: false,
+                        labels: {
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--chart-line').trim()
+                        }
+                    }
+                },
                 scales: {
                     x: {
-                        title: { display: true, text: 'Categoria', color: isDark ? '#fff' : '#000' },
-                        ticks: { color: isDark ? '#fff' : '#000' },
-                        grid: { color: isDark ? '#444' : '#ddd' }
+                        title: { 
+                            display: true, 
+                            text: 'Categoria', 
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--chart-line').trim() 
+                        },
+                        ticks: { 
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--chart-line').trim() 
+                        },
+                        grid: { 
+                            color: isDark ? '#444' : '#ddd' 
+                        }
                     },
                     y: {
-                        title: { display: true, text: 'Valor (R$)', color: isDark ? '#fff' : '#000' },
-                        ticks: { color: isDark ? '#fff' : '#000' },
-                        grid: { color: isDark ? '#444' : '#ddd' },
+                        title: { 
+                            display: true, 
+                            text: 'Valor (R$)', 
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--chart-line').trim() 
+                        },
+                        ticks: { 
+                            color: getComputedStyle(document.documentElement).getPropertyValue('--chart-line').trim() 
+                        },
+                        grid: { 
+                            color: isDark ? '#444' : '#ddd' 
+                        },
                         beginAtZero: true
                     }
                 }
@@ -938,5 +1003,11 @@ function setupTheme() {
         body.classList.toggle('dark-mode', isDark);
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         updateIcon();
+
+        // Se existe um gráfico aberto, regenera ele para atualizar as cores
+        const reportMonth = document.getElementById('report-month')?.value;
+        if (reportMonth && document.getElementById('expensesChart')) {
+            generateReport();
+        }
     });
 }
