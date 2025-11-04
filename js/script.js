@@ -260,6 +260,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Atualizar interface
     updateMonthDisplay();
     financialData.updateDataInfo();
+    // Ajustar comportamento da calculadora para caber na viewport
+    if (typeof adjustCalculatorScrollability === 'function') {
+        adjustCalculatorScrollability();
+        window.addEventListener('resize', adjustCalculatorScrollability);
+    }
    
     // Configurar o botão flutuante da calculadora
     document.getElementById('calculator-fab').addEventListener('click', function() {
@@ -270,6 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Esconde o seletor de mês quando a calculadora é aberta
         document.querySelector('.month-selector').style.display = 'none';
+        if (typeof adjustCalculatorScrollability === 'function') adjustCalculatorScrollability();
     });
 });
 
@@ -411,6 +417,73 @@ function setupCalculator() {
     updateDisplay();
 }
 
+// Ajusta se a calculadora deve permitir rolagem interna em telas pequenas
+function adjustCalculatorScrollability() {
+    const calc = document.querySelector('.calculator');
+    if (!calc) return;
+
+    const header = document.querySelector('header');
+    const bottomNav = document.querySelector('.bottom-nav');
+    const headerH = header ? header.offsetHeight : 0;
+    const bottomH = bottomNav ? bottomNav.offsetHeight : 0;
+
+    // Espaço disponível aproximado para a calculadora
+    const available = window.innerHeight - headerH - bottomH - 40;
+    // aumentar o breakpoint para cobrir celulares maiores caso necessário
+    const mobileBreakpoint = 768;
+
+    if (window.innerWidth <= mobileBreakpoint) {
+        // Em mobile pequeno, transformar a calculadora em painel fixo para evitar cortes
+        calc.classList.add('small-scrollable');
+        calc.classList.add('mobile-fullscreen');
+        calc.style.position = 'fixed';
+        calc.style.top = '0px';
+        calc.style.left = '0px';
+        calc.style.right = '0px';
+        // garantir espaço para a bottom nav
+        calc.style.bottom = (bottomH || 64) + 'px';
+        calc.style.maxHeight = 'none';
+        calc.style.overflow = 'auto';
+        // adicionar classe no body para ocultar elementos de navegação quando em modo mobile
+        document.body.classList.add('mobile-calc-open');
+        // inserir botão de fechar se não existir
+        if (!calc.querySelector('.calc-close')) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'calc-close';
+            closeBtn.setAttribute('aria-label', 'Fechar calculadora');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.addEventListener('click', () => {
+                // simular retorno para dashboard ao fechar
+                document.body.classList.remove('mobile-calc-open');
+                showSection('dashboard');
+                // restaurar foco
+                window.scrollTo(0, 0);
+            });
+            calc.appendChild(closeBtn);
+        }
+    } else {
+        // comportamento padrão para telas maiores
+        calc.classList.remove('mobile-fullscreen');
+        if (calc.scrollHeight > available) {
+            calc.classList.add('small-scrollable');
+            calc.style.maxHeight = available + 'px';
+            calc.style.overflow = 'auto';
+        } else {
+            calc.classList.remove('small-scrollable');
+            calc.style.maxHeight = '';
+            calc.style.overflow = '';
+        }
+        // restaurar position se foi alterado
+        calc.style.position = '';
+        calc.style.top = '';
+        calc.style.left = '';
+        calc.style.right = '';
+        calc.style.bottom = '';
+        // remover flag mobile caso exista
+        document.body.classList.remove('mobile-calc-open');
+    }
+}
+
 // ==========================================
 // EVENT LISTENERS
 // ==========================================
@@ -510,9 +583,17 @@ function showSection(sectionId) {
             title.innerHTML = '<i class="fas fa-coins"></i> Controle Financeiro';
             document.getElementById('calculator-section').insertBefore(title, document.getElementById('calculator-section').firstChild);
         }
+        // Garantir que a calculadora fique visível e em foco
+        const calcSection = document.getElementById('calculator-section');
+        if (calcSection && typeof calcSection.scrollIntoView === 'function') {
+            // leve a calculadora ao topo da viewport se precisar
+            setTimeout(() => calcSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        }
     } else {
         // Remove a classe de bloqueio de scroll
         body.classList.remove('calculator-open');
+        // Garantir que qualquer modo mobile modal seja removido
+        document.body.classList.remove('mobile-calc-open');
         
         // Mostra todos os elementos
         header.style.display = 'block';

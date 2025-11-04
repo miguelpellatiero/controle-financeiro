@@ -56,7 +56,8 @@ body {
 }
 
 body.calculator-open {
-    overflow: hidden;
+    /* Permitir rolagem quando a calculadora ocupa a tela, para evitar conteúdo cortado */
+    overflow: auto;
 }
 
 .container {
@@ -449,7 +450,7 @@ header {
 }
 
 /* ========================================
-   CALCULADORA
+   CALCULADORA (RESPONSIVO e BOTÕES QUADRADOS)
    ========================================= */
 .calculator-app-title {
     display: flex;
@@ -469,6 +470,7 @@ header {
     color: var(--warning);
     font-size: 1.4rem;
 }
+
 .calculator-fab {
     position: fixed;
     bottom: 80px;
@@ -487,6 +489,33 @@ header {
     transition: transform 0.3s, background-color 0.3s;
 }
 
+/* Botão de fechar que aparece no modo mobile-fullscreen */
+.calc-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+    z-index: 2100;
+}
+
+body.mobile-calc-open .bottom-nav {
+    display: none !important;
+}
+
+/* quando o modal mobile estiver aberto, esconder o header para ganhar altura real */
+body.mobile-calc-open header {
+    display: none !important;
+}
+
 .calculator-fab:active {
     transform: scale(0.95);
     background-color: var(--dark);
@@ -496,27 +525,32 @@ header {
     font-size: 1.5rem;
 }
 
+/* Container principal: largura máxima, centrado e altura limitada para caber na viewport */
 .calculator {
     background-color: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     padding: 15px;
-    margin: 0;
-    max-width: 100%;
-    height: calc(100vh - 150px);
+    margin: 20px auto;
+    width: 100%;
+    max-width: 480px;
     display: flex;
     flex-direction: column;
+    /* permitir rolagem interna se necessário, mas tentar manter tudo visível */
+    max-height: calc(100vh - 140px);
+    overflow: auto;
 }
 
+/* Display com tamanho fluido */
 .calculator-display {
     background-color: var(--light);
     border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 15px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
     text-align: right;
-    font-size: 2.2rem;
+    font-size: clamp(1.4rem, 3.5vw, 2.5rem);
     font-weight: bold;
-    min-height: 80px;
+    min-height: clamp(56px, 10vh, 110px);
     overflow: hidden;
     color: var(--text);
     display: flex;
@@ -525,34 +559,39 @@ header {
 }
 
 .calculator-history {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--gray);
-    min-height: 25px;
+    min-height: 20px;
     text-align: right;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
+/* Área de botões: ocupa o restante e distribui as linhas igualmente */
 .calculator-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    flex: 1;
+    gap: 15px;
+    flex: 1 1 auto;
+    min-height: 0; /* importante para permitir scroll interno */
+    grid-auto-rows: 1fr; /* linhas iguais */
 }
 
+/* Botões quadrados e responsivos */
 .calc-btn {
-    padding: 15px 5px;
     border: none;
     border-radius: 12px;
     background-color: var(--light);
     color: var(--text);
-    font-size: 1.4rem;
+    font-size: clamp(1rem, 2.5vw, 1.6rem);
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s;
-    min-height: 60px;
+    transition: all 0.15s;
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Garante proporção quadrada com base na largura do grid */
+    aspect-ratio: 1 / 1;
+    padding: 0; /* usar aspect-ratio em vez de padding para altura */
 }
 
 .calc-btn:active {
@@ -563,7 +602,6 @@ header {
 .calc-btn.operator {
     background-color: var(--primary);
     color: rgb(231, 221, 221);
-    font-size: 1.3rem;
 }
 
 .calc-btn.equals {
@@ -579,6 +617,121 @@ header {
 .calc-btn[data-action="transfer"] {
     background-color: var(--warning);
     color: rgb(5, 5, 5);
+}
+
+/* Caso a área total ultrapasse a viewport (ex.: telas muito pequenas), permitir rolagem interna mantendo o cabeçalho e display visíveis */
+.calculator.small-scrollable {
+    overflow: auto;
+}
+
+/* ========================================
+   VARIAÇÕES POR LARGURA
+   ========================================= */
+@media (max-width: 576px) {
+    .calculator {
+        padding: 10px;
+        margin: 10px auto 90px; /* espaço inferior para a bottom-nav */
+        max-width: 100%;
+        max-height: calc(100vh - 120px);
+    }
+
+    .calculator-display {
+        padding: 10px;
+        font-size: clamp(1.2rem, 5vw, 2rem);
+        min-height: 56px;
+    }
+
+    .calculator-buttons {
+        gap: 8px;
+        grid-auto-rows: minmax(44px, 1fr);
+    }
+
+    .calc-btn {
+        font-size: 1.2rem;
+        aspect-ratio: 1 / 1;
+    }
+}
+
+/* Regras agressivas para telas muito pequenas (smartphones menores) */
+@media (max-width: 420px) {
+    .calculator {
+        /* Ocupa a maior parte da tela como um painel fixo para garantir visibilidade */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 64px; /* espaço para a bottom-nav */
+        margin: 0;
+        padding: 8px;
+        border-radius: 0;
+        z-index: 2000;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+    }
+
+    /* garantir que a calculadora ocupe toda a altura útil do dispositivo quando for modal */
+    body.mobile-calc-open .calculator {
+        top: env(safe-area-inset-top, 0);
+        bottom: env(safe-area-inset-bottom, 0);
+        border-radius: 0;
+        padding-bottom: 16px; /* espaço extra para botões */
+    }
+
+    .calculator-display {
+        font-size: 1.6rem;
+        min-height: 56px;
+        padding: 8px;
+    }
+
+    .calculator-history {
+        display: none; /* poupar espaço em telas pequenas */
+    }
+
+    .calculator-buttons {
+        gap: 6px;
+        grid-auto-rows: 1fr; /* linhas equitativas */
+        flex: 1 1 auto;
+    }
+
+    .calc-btn {
+        /* remover aspect-ratio para o layout móvel e usar altura cheia das células */
+        aspect-ratio: auto;
+        height: 100%;
+        font-size: 1.1rem;
+        padding: 0;
+        border-radius: 8px;
+    }
+
+    /* Garantir que o FAB não sobreponha a calculadora fixa */
+    .calculator-fab {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .calculator {
+        max-width: 420px;
+        margin: 24px auto;
+        max-height: none;
+        height: auto;
+    }
+
+    .calculator-display {
+        font-size: 2.5rem;
+        min-height: 90px;
+    }
+
+    .calc-btn {
+        font-size: 1.4rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .calculator {
+        max-width: 480px;
+    }
 }
 
 /* ========================================
